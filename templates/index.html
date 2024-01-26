@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>This is the Flask URL Shortener</title>
+</head>
+<body>
+    <main class="container">
+        <nav>
+            <ul>
+                <li>🪚</li>
+            </ul>
+            <ul>
+                <li><a href="{{ url_for('stats')}}">Stats</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+        <h1>Welcome to Flask URL Shortener</h1>
+        {% for message in get_flashed_messages() %}
+            <mark>Error: {{ message }}</mark>
+        {% endfor %}
+        <form method="post">
+            <label for="url">URL</label>
+            <input type="text" id="url" name="url" placeholder="URL to shorten" value="{{ request.form['url'] }}" required>
+
+            <!-- Button -->
+            <button type="submit">Submit</button>
+        </form>
+        {% if short_url %}
+            <hr>
+            <span id="shortURL">{{ short_url }}</span>
+            <hr>
+            <button onclick="copyURL()">Copy URL</button>
+        {% endif %}
+    </main>   
+    <script src="{{ url_for('static', filename='index.js')}}"></script>
+</body>
+</html>
