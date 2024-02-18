@@ -2,7 +2,7 @@
 from hashids import Hashids
 from flask import Flask, render_template, request, flash, redirect, url_for
 
-from dbutils import insertURL, updateClick, getStats
+from dbutils import insert_url, update_click, get_stats
 
 app = Flask(__name__, template_folder='templates')
 
@@ -11,20 +11,26 @@ hashids = Hashids(min_length=4, salt=app.config['SECRET_KEY'])
 
 @app.route('/', methods=('GET', 'POST'))
 def index():
+    """
+    A function to handle GET and POST requests for the index route.
+
+    Parameters:
+    None
+
+    Returns:
+    Renders the index.html template with the short URL if a POST request is made, otherwise renders the index.html template.
+    """
     if request.method == 'POST':
         url = request.form['url']
         
         if not url:
-            flash('You need to enter an URL!')
+            flash('You need to enter a URL!')
             return redirect(url_for('index'))
         
-        #In order for the redirect to work it need the http in the begining of the string
-        if url.find('https://') != 0 or url.find('http://') != 0:
+        if not url.startswith(('http://', 'https://')):
             url = "http://" + url
         
-        url_data = insertURL(url)
-
-        url_id = url_data.lastrowid
+        url_id = insert_url(url)
         hashid = hashids.encode(url_id)
         short_url = request.host_url + hashid
 
@@ -34,16 +40,23 @@ def index():
 
 @app.route('/<id>')
 def url_redirect(id):
-    original_id = hashids.decode(id)
-    if original_id:
-        original_url = updateClick(original_id)
+    """
+    Redirects to the original URL associated with the given ID after decoding it using hashids. 
+    If the ID is not valid, it flashes a message and redirects to the index.
+    """
+    decoded_id = hashids.decode(id)
+    if decoded_id:
+        original_url = update_click(decoded_id)
         return redirect(original_url)
     else:
-        flash('Not a Valid URL')
+        flash('Not a valid URL')
         return redirect(url_for('index'))
 
     
 @app.route('/stats')
 def stats():
-    urls = getStats(request, hashids)
+    """
+    A function to retrieve statistics and render the stats.html template with the retrieved URLs.
+    """
+    urls = get_stats(request, hashids)
     return render_template('stats.html', urls=urls)
